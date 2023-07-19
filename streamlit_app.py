@@ -3,6 +3,7 @@ import numpy as np
 import math
 from cvzone.ClassificationModule import Classifier
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+import cv2
 
 st.title("SIBI TRANSLATOR")
 st.write("Ini adalah aplikasi penerjemah bahasa isyarat berdasarkan SIBI")
