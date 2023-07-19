@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import math
-from cvzone.HandTrackingModule import HandDetector
 from cvzone.ClassificationModule import Classifier
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
@@ -20,7 +19,6 @@ elif genre == "Kosakata":
     st.write("Anda memilih Kosakata")
     model_choice = "2"
 
-detector = HandDetector(maxHands=2)  # Mengaktifkan deteksi dua tangan
 offset = 20
 imgSize = 600  # Mengatur ukuran gambar
 
@@ -41,9 +39,8 @@ class VideoProcessor(VideoProcessorBase):
 
     def recv(self, frame: np.ndarray) -> np.ndarray:
         imgOutput = frame.copy()
-        hands, _ = detector.findHands(imgOutput)
 
-        # ... (sisa kode Anda)
+        # ... (sisa kode Anda, termasuk deteksi tangan jika digunakan dengan mediapipe)
 
         return imgOutput
 
