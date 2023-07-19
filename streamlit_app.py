@@ -1,6 +1,11 @@
 import streamlit as st
 import numpy as np
 import math
+import cv2
+from cvzone.HandTrackingModule import HandDetector
+from cvzone.ClassificationModule import Classifier
+import av
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 st.title("SIBI TRANSLATOR")
 st.write("Ini adalah aplikasi penerjemah bahasa isyarat berdasarkan SIBI")
@@ -17,14 +22,6 @@ elif genre == "Kosakata":
     st.write("Anda memilih Kosakata")
     model_choice = "2"
 
-# Mendapatkan ukuran frame video
-cap = cv2.VideoCapture(0)
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
-
-# Membuat tampilan untuk video
-video_placeholder = st.empty()
-
 detector = HandDetector(maxHands=2)  # Mengaktifkan deteksi dua tangan
 offset = 20
 imgSize = 600  # Mengatur ukuran gambar
@@ -40,41 +37,21 @@ classifier1 = Classifier("Model/keras_model.h5", "Model/labels.txt")
 # Load model AI untuk kosakata
 classifier2 = Classifier("Model/keras_model1.h5", "Model/labels1.txt")
 
-# Periksa apakah aplikasi berjalan di Streamlit Cloud atau platform serupa
-try:
-    import streamlit.ReportThread as ReportThread
-    import streamlit.server.Server as Server
+class VideoProcessor(VideoProcessorBase):
+    def __init__(self) -> None:
+        super().__init__()
 
-    # Streamlit Cloud atau platform serupa
-    IS_STREAMLIT_CLOUD = hasattr(ReportThread, 'get_report_ctx') and hasattr(Server, '_get_server_details')
-except Exception as e:
-    # Lingkungan lokal
-    IS_STREAMLIT_CLOUD = False
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        img = frame.to_ndarray(format="bgr24")
+        imgOutput = img.copy()
+        hands, img = detector.findHands(img)
 
-# Pilih paket OpenCV yang sesuai berdasarkan platform
-if IS_STREAMLIT_CLOUD:
-    import cv2
-else:
-    import cv2  # Ubah ini menjadi 'import cv2 as cv2_headless' jika Anda telah menginstal 'opencv-python-headless'
+        # ... (sisa kode Anda)
 
-while True:
-    success, img = cap.read()
-    imgOutput = img.copy()
-    hands, img = detector.findHands(img)
+        return av.VideoFrame.from_ndarray(imgOutput, format="bgr24")
 
-    # ... (sisa kode Anda)
+# Configurasi RTC untuk mengakses kamera
+rtc_configuration = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
 
-    # Menampilkan frame video di Streamlit
-    video_placeholder.image(imgOutput, channels="BGR")
 
-    key = cv2.waitKey(1)
-
-    if key == ord("1"):
-        model_choice = "1"
-    elif key == ord("2"):
-        model_choice = "2"
-    elif key == 27:
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+webrtc_streamer(key="example", video_processor_factory=VideoProcessor, rtc_configuration=rtc_configuration)
