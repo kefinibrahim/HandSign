@@ -1,10 +1,8 @@
 import streamlit as st
 import numpy as np
 import math
-import cv2
 from cvzone.HandTrackingModule import HandDetector
 from cvzone.ClassificationModule import Classifier
-import av
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 st.title("SIBI TRANSLATOR")
@@ -41,14 +39,13 @@ class VideoProcessor(VideoProcessorBase):
     def __init__(self) -> None:
         super().__init__()
 
-    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        img = frame.to_ndarray(format="bgr24")
-        imgOutput = img.copy()
-        hands, img = detector.findHands(img)
+    def recv(self, frame: np.ndarray) -> np.ndarray:
+        imgOutput = frame.copy()
+        hands, _ = detector.findHands(imgOutput)
 
         # ... (sisa kode Anda)
 
-        return av.VideoFrame.from_ndarray(imgOutput, format="bgr24")
+        return imgOutput
 
 # Configurasi RTC untuk mengakses kamera
 rtc_configuration = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
